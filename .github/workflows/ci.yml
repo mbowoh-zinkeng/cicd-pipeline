@@ -47,21 +47,34 @@ jobs:
     steps:
       - name: 'Checkout'  # Checkout the repository code.
         uses: 'actions/checkout@v2'
-
     
-      - name: 'Helm Deployment'
-        uses: 'mbo/helm-bot@default'
+      - name: 'Helm backend Deployment'
+        uses: 'mbowoh-zinkeng/helm-bot@master'
         env:
           KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
         with:
           token: '${{ github.token }}'
           chart: 'app'
-          namespace: '${{ env.NAMESPACE }}'
-          release: '${{ env.SERVICE_NAME }}'
+          namespace: 'default'
+          release: 'backend'
           helm: 'helm3'
           version: "1"
-          values: '{ "app": { "name": "${{ env.SERVICE_NAME }}" }, "image" : { "repository" : "${{ env.REPOSITORY }}", "tag" : "${{ env.TAG }}", "pullPolicy": "Always" } }'
-          value-files: '.github/workflows/delivery/${{ env.NAMESPACE }}.yml'
+          values: '{ "app": { "name": "backend" }, "image" : { "repository" : "", "tag" : "${{ env.TAG }}", "pullPolicy": "Always" } }'
+          value-files: '.github/workflows/delivery/default.yml'
+  
+      - name: 'Helm frontend Deployment'
+        uses: 'mbowoh-zinkeng/helm-bot@master'
+        env:
+          KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
+        with:
+          token: '${{ github.token }}'
+          chart: 'app'
+          namespace: 'default'
+          release: 'frontend'
+          helm: 'helm3'
+          version: "1"
+          values: '{ "app": { "name": "frontend" }, "image" : { "repository" : "", "tag" : "${{ github.sha }}", "pullPolicy": "Always" } }'
+          value-files: '.github/workflows/delivery/default.yml'
   
 
 
