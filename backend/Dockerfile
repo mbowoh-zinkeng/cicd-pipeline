@@ -3,7 +3,7 @@ RUN mkdir -p /go/src/backend
 WORKDIR /go/src/backend
 COPY . .
 
-RUN go build server.go -o backend
+RUN go build ./server.go -o backend
 FROM alpine:latest
 
 # convert build-arg to env variables
