@@ -10,9 +10,9 @@ FROM alpine:latest
 RUN apk add --no-cache tzdata
 ENV TZ Africa/Lagos
 RUN mkdir -p /svc/
-COPY --from=builder /go/src/backend/backend /svc/
+COPY --from=builder /go/src/backend/server /svc/
 
 WORKDIR /svc/
 
 
-CMD ["backend"]
+CMD ["server"]
