@@ -8,7 +8,6 @@ jobs:
   containerize:
     name: Build container image, tag & publish to image registry
     runs-on: "ubuntu-20.04"
-    needs: [ quality-control ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2   
