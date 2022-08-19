@@ -9,6 +9,7 @@ jobs:
     name: Build container image, tag & publish to image registry
     runs-on: "ubuntu-20.04"
     steps:
+    
       - name: Checkout code
         uses: actions/checkout@v2   
       
@@ -29,7 +30,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: mbowoh
           IMAGE_TAG: ${{ github.sha }}
-       run: |
+        run: |
          cd ./backend
          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY/backend:$IMAGE_TAG .
          docker push $ECR_REGISTRY/$ECR_REPOSITORY/backend:$IMAGE_TAG
