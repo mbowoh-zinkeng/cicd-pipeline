@@ -1,0 +1,69 @@
+name: Build and Containerize
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  
+  containerize:
+    name: Build container image, tag & publish to image registry
+    runs-on: "ubuntu-20.04"
+    needs: [ quality-control ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2   
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: mbowoh
+          IMAGE_TAG: ${{ github.sha }}
+       run: |
+         cd ./backend
+         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY/backend:$IMAGE_TAG .
+         docker push $ECR_REGISTRY/$ECR_REPOSITORY/backend:$IMAGE_TAG
+         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY/backend:$IMAGE_TAG"
+         cd ../frontend
+         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY/frontend:$IMAGE_TAG .
+         docker push $ECR_REGISTRY/$ECR_REPOSITORY/frontend:$IMAGE_TAG
+         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY/frontend:$IMAGE_TAG"
+  
+  deployment:
+    name: Orchestrate Rollout to K8s
+    needs: containerize
+    runs-on: "ubuntu-20.04"
+    steps:
+      - name: 'Checkout'  # Checkout the repository code.
+        uses: 'actions/checkout@v2'
+
+    
+      - name: 'Helm Deployment'
+        uses: 'mbo/helm-bot@default'
+        env:
+          KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
+        with:
+          token: '${{ github.token }}'
+          chart: 'app'
+          namespace: '${{ env.NAMESPACE }}'
+          release: '${{ env.SERVICE_NAME }}'
+          helm: 'helm3'
+          version: "1"
+          values: '{ "app": { "name": "${{ env.SERVICE_NAME }}" }, "image" : { "repository" : "${{ env.REPOSITORY }}", "tag" : "${{ env.TAG }}", "pullPolicy": "Always" } }'
+          value-files: '.github/workflows/delivery/${{ env.NAMESPACE }}.yml'
+  
+
+
+
+
