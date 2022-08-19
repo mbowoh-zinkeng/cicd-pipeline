@@ -1,9 +1,13 @@
 # build stage
-FROM node:lts-alpine as build-stage
+FROM node:13.12.0-alpine as build
 WORKDIR /app
-COPY package*.json ./
-RUN npm i
-COPY . .
+ENV PATH /app/node_modules/.bin:$PATH
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm ci --silent
+RUN npm install react-scripts@3.4.1 -g --silent
+COPY . ./
+RUN npm run build
 
 #RUN NODE_OPTIONS=--max-old-space-size=4096 npm run build
 # production stage
