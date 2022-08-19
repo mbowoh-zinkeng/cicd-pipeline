@@ -32,8 +32,8 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
          cd ./backend
-         docker build -t public.ecr.aws/q0g8u1x8/mbowoh:$IMAGE_TAG .
-         docker push public.ecr.aws/q0g8u1x8/mbowoh:$IMAGE_TAG
+         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
          cd ../frontend
          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY/frontend:$IMAGE_TAG .
