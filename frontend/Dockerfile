@@ -5,7 +5,7 @@ COPY package*.json ./
 RUN npm i
 COPY . .
 
-RUN NODE_OPTIONS=--max-old-space-size=4096 npm run build
+#RUN NODE_OPTIONS=--max-old-space-size=4096 npm run build
 # production stage
 FROM nginx:stable as deployment
 COPY --from=build-stage /app/dist /var/www
